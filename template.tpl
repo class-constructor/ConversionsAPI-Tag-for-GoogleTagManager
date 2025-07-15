@@ -157,25 +157,20 @@ function isAlreadyHashed(input){
   return input && (input.match('^[A-Fa-f0-9]{64}$') != null);
 }
 
-function setFbCookie(name, value, expire) {
+function setCookieValue(paradigm, name, value, expire) {
+  let sameSite = 'strict';
+  let httpOnly = true;
+  if (paradigm === 'fb') {
+    sameSite = 'Lax';
+    httpOnly = false;
+  }
   setCookie(name, value, {
     domain: 'auto',
     path: '/',
-    samesite: 'Lax',
+    samesite: sameSite,
     secure: true,
     'max-age': expire || 7776000, // default to 90 days
-    httpOnly: false
-  });
-}
-
-function setHttpOnlyCookie(name, value, expire) {
-  setCookie(name, value, {
-    domain: 'auto',
-    path: '/',
-    samesite: 'strict',
-    secure: true,
-    'max-age': expire || 7776000, // default to 90 days
-    httpOnly: true
+    httpOnly: httpOnly
   });
 }
 
@@ -292,7 +287,7 @@ function setGtmEecCookie(value) {
 
   const gtmeecCookieValueBase64 = toBase64(cookieJsonStr);
 
-  setHttpOnlyCookie('_gtmeec', gtmeecCookieValueBase64);
+  setCookieValue('http', '_gtmeec', gtmeecCookieValueBase64);
 }
 
 //sets first party cookie with latest merged user data.
@@ -460,11 +455,11 @@ function sendEventToCapiServers(pixel_event) {
       if (statusCode >= 200 && statusCode < 300) {
 
         if (data.extendCookies && pixel_event.user_data.fbc) {
-          setFbCookie('_fbc', pixel_event.user_data.fbc);
+          setCookieValue('fb', '_fbc', pixel_event.user_data.fbc);
         }
 
         if (data.extendCookies && pixel_event.user_data.fbp) {
-          setFbCookie('_fbp', pixel_event.user_data.fbp);
+          setCookieValue('fb', '_fbp', pixel_event.user_data.fbp);
         }
 
         if (data.enableEventEnhancement) {
